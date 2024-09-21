@@ -4,8 +4,14 @@ const { Orders } = require('../Order/order.entity');
 const createOrder = async (req, res) => {
   try {
     const { products, deliveryType, address, totalPrice } = req.body;
-    // Example products: [{ productId: '123', quantity: 2 }]
-    const newOrder = new Orders({ products, deliveryType, address, totalPrice, paymentStatus: 'pending' });
+    const newOrder = new Orders({
+      products,
+      deliveryType,
+      address,
+      totalPrice,
+      paymentStatus: 'pending',
+      orderStatus: 'Принял', // Boshlang'ich status
+    });
     await newOrder.save();
 
     // Click test to'lov integratsiyasi
@@ -19,7 +25,6 @@ const createOrder = async (req, res) => {
 // Barcha buyurtmalarni olish
 const getAllOrders = async (req, res) => {  
   try {
-    // Barcha buyurtmalarni olish
     const orders = await Orders.find();
     res.status(200).json(orders);
   } catch (error) {
@@ -31,31 +36,47 @@ const getAllOrders = async (req, res) => {
 // Ma'lum bir buyurtmani olish
 const getOrderById = async (req, res) => {
   try {
-    const order = await Orders.findById();
+    const order = await Orders.findById(req.params.id); // req.params.id ishlatildi
+    if (!order) return res.status(404).json({ message: 'Order not found' });
     res.status(200).json(order);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// Buyurtmani yangilash (to'lov qabul qilish)
+// Buyurtmani yangilash (to'lov holatini yangilash)
 const updateOrderStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
 
     const updatedOrder = await Orders.findByIdAndUpdate(id, { paymentStatus: status }, { new: true });
+    if (!updatedOrder) return res.status(404).json({ message: 'Order not found' });
     res.status(200).json(updatedOrder);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// Buyurtmani yangilash (umumiy ma'lumotlar)
+// Buyurtma holatini yangilash (orderStatus)
+const updateOrderStatusByAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { orderStatus } = req.body;
+
+    const updatedOrder = await Orders.findByIdAndUpdate(id, { orderStatus }, { new: true });
+    if (!updatedOrder) return res.status(404).json({ message: 'Order not found' });
+    res.status(200).json(updatedOrder);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Buyurtmani umumiy yangilash
 const updateOrder = async (req, res) => {
   try {
     const { id } = req.params;
-    const { products, deliveryType, address, totalPrice, paymentStatus } = req.body;
+    const { products, deliveryType, address, totalPrice, paymentStatus, orderStatus } = req.body;
 
     const updatedOrder = await Orders.findByIdAndUpdate(id, {
       products,
@@ -63,6 +84,7 @@ const updateOrder = async (req, res) => {
       address,
       totalPrice,
       paymentStatus,
+      orderStatus, // Yangi qo'shildi
     }, { new: true }).populate('products.productId');
     
     if (!updatedOrder) return res.status(404).json({ message: 'Order not found' });
@@ -89,6 +111,7 @@ module.exports = {
   getAllOrders,
   getOrderById,
   updateOrderStatus,
+  updateOrderStatusByAdmin, // Yangi funksiya export qilingan
   updateOrder,
   deleteOrder
 };

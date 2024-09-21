@@ -1,6 +1,6 @@
 const AdminBro = require('admin-bro');
 const AdminBroMongoose = require('admin-bro-mongoose');
-const { Orders } = require('./order.entity'); // Orders modelini import qilyapmiz
+const { Orders } = require('./order.entity');
 
 AdminBro.registerAdapter(AdminBroMongoose);
 
@@ -18,7 +18,7 @@ const {
 const options = {
   properties: {
     products: {
-      type: 'mixed', // 'mixed' turidagi ma'lumotlar uchun mos ravishda
+      type: 'mixed',
     },
     deliveryType: {
       type: 'string',
@@ -31,6 +31,14 @@ const options = {
     },
     paymentStatus: {
       type: 'string',
+    },
+    orderStatus: {
+      type: 'string',
+      availableValues: [
+        { value: 'Принял', label: 'Принял' },
+        { value: 'Подготовка', label: 'Подготовка' },
+        { value: 'Готовый', label: 'Готовый' },
+      ],
     },
     createdAt: {
       type: 'datetime',
@@ -69,5 +77,5 @@ const options = {
 
 module.exports = {
   options,
-  resource: Orders, // Orders modeli bilan bog'laymiz
+  resource: Orders,
 };

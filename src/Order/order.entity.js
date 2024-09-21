@@ -8,7 +8,7 @@ const OrdersSchema = new mongoose.Schema({
     },
     productName: {
       type: String,
-      required: true, // Yangi qo'shildi
+      required: true,
     },
     quantity: {
       type: Number,
@@ -37,6 +37,11 @@ const OrdersSchema = new mongoose.Schema({
     type: String,
     enum: ['pending', 'paid', 'failed', 'unpaid'],
     default: 'pending',
+  },
+  orderStatus: {
+    type: String,
+    enum: ['Принял', 'Подготовка', 'Готовый'],
+    default: 'Принял', // Boshlang'ich status 'Принял'
   },
   createdAt: {
     type: Date,
