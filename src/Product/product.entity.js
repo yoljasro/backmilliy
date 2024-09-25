@@ -10,6 +10,9 @@ const ProductSchema = new mongoose.Schema({
     desc : {
         type : String,
     },
+    minute: {
+        type: String,
+    },
     price: {
         type: Number,
     }

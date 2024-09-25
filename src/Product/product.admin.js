@@ -28,7 +28,10 @@ const productsOptions = {
     },
     desc: {
       type : 'string'
-    },        
+    },     
+    minute : {
+      type : 'string',
+    }   ,
     price: {
       type: 'number',
     },
