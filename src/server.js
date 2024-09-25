@@ -24,7 +24,6 @@ const { createOrder,
   getAllOrders,
   getOrderById,
   updateOrderStatus,
-  updateOrderStatusByAdmin,
   updateOrder,
   deleteOrder } = require("./controllers/orders.controller")
 
@@ -88,7 +87,6 @@ const run = async () => {
   
   // Buyurtmani yangilash
   app.put("/orders/:id", updateOrder);
-  app.put("/orders/:id " , updateOrderStatusByAdmin)
   
   // Buyurtmani o'chirish
   app.delete("/orders/:id", deleteOrder);

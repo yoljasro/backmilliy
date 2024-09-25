@@ -9,7 +9,7 @@ const createOrder = async (req, res) => {
       deliveryType,
       address,
       totalPrice,
-      paymentStatus: 'pending',
+      paymentStatus: 'Принял',
       orderStatus: 'Принял', // Boshlang'ich status
     });
     await newOrder.save();

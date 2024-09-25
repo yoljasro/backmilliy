@@ -35,8 +35,8 @@ const OrdersSchema = new mongoose.Schema({
   },
   paymentStatus: {
     type: String,
-    enum: ['в ожидании', 'оплаченный', 'неуспешный', 'неоплаченный'],
-    default: 'в ожидании',
+    enum: ['Принял', 'оплаченный', 'неуспешный', 'неоплаченный'],
+    default: 'Принял',
   },
   orderStatus: {
     type: String,
