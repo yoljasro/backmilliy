@@ -3,8 +3,8 @@ const { Product } = require('../Product/product.entity');
 // Yangi mahsulot qo'shish
 const createProduct = async (req, res) => {
   try {
-    const { image, title, price } = req.body;
-    const newProduct = new Product({ image, title, price });
+    const { image, title, desc, price } = req.body;
+    const newProduct = new Product({ image, title, price , desc });
     await newProduct.save();
     res.status(201).json(newProduct);
   } catch (error) {
@@ -40,8 +40,8 @@ const deleteProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const { image, title, price } = req.body;
-    const updatedProduct = await Product.findByIdAndUpdate(id, { image, title, price }, { new: true });
+    const { image, title, desc ,  price } = req.body;
+    const updatedProduct = await Product.findByIdAndUpdate(id, { image, title, desc, price }, { new: true });
     res.status(200).json(updatedProduct);
   } catch (error) {
     res.status(500).json({ message: error.message });

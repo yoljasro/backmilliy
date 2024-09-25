@@ -26,6 +26,9 @@ const productsOptions = {
     title: {
       type: 'string',
     },
+    desc: {
+      type : 'string'
+    },        
     price: {
       type: 'number',
     },
