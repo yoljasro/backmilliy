@@ -17,7 +17,7 @@ const OrdersSchema = new mongoose.Schema({
   }],
   deliveryType: {
     type: String,
-    enum: ['самовывоз', 'доставка'],
+    enum: ['самовывоз', 'доставка'],  
     required: true,
   },
   address: {
@@ -35,8 +35,8 @@ const OrdersSchema = new mongoose.Schema({
   },
   paymentStatus: {
     type: String,
-    enum: ['pending', 'paid', 'failed', 'unpaid'],
-    default: 'pending',
+    enum: ['в ожидании', 'оплаченный', 'неуспешный', 'неоплаченный'],
+    default: 'в ожидании',
   },
   orderStatus: {
     type: String,
