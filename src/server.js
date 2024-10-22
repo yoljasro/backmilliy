@@ -5,12 +5,20 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const options = require('./admin.options');
 const buildAdminRouter = require('./admin.router');
+const axios = require('axios');
+const crypto = require('crypto');
 
 // Sales Chart uchun kerakli kutubxonalar
 const { getSalesData } = require('./controllers/sales.controller'); // Sales controller'dan funksiya
 
 const app = express();
 const port = 9000;
+
+// Click API ma'lumotlari
+const MERCHANT_ID = '27487'; // Sizning merchant ID
+const SERVICE_ID = '37711'; // Sizning service ID
+const MERCHANT_USER_ID = '46815'; // Sizning merchant user ID
+const SECRET_KEY = 'isJihg1thilU'; // Sizning secret key
 
 //controllers 
 const { createCompany, getAllCompanies } = require("./controllers/company.controller")
@@ -29,6 +37,45 @@ const { createOrder,
 
 app.use(cors());
 
+// Middleware
+app.use(express.json()); // JSON formatida ma'lumotlarni qabul qilish
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ limit: '100mb', extended: true }));
+app.use('/uploads', express.static('uploads'));
+
+// Click - Invoice yaratish
+app.post('/create-invoice', async (req, res) => {
+    const { amount, phoneNumber, merchantTransId } = req.body; // Telefon raqamini qabul qilish
+    const timestamp = Math.floor(Date.now() / 1000); // UNIX vaqt
+    const digest = crypto.createHash('sha1').update(timestamp + SECRET_KEY).digest('hex'); // sha1 hash
+
+    const headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Auth': `${MERCHANT_USER_ID}:${digest}:${timestamp}`
+    };
+
+    const data = {
+        service_id: SERVICE_ID,
+        amount: amount,
+        phone_number: phoneNumber, // Telefon raqamini yuborish
+        merchant_trans_id: merchantTransId
+    };
+
+    try {
+        const response = await axios.post('https://api.click.uz/v2/merchant/invoice/create', data, { headers });
+        
+        // Olingan invoice_id yordamida to'lov sahifasiga yo'naltirish
+        const paymentUrl = `https://my.click.uz/services/pay?service_id=${SERVICE_ID}&merchant_id=${MERCHANT_ID}&amount=${amount}&transaction_param=${merchantTransId}&return_url=http://localhost:${port}/return-url`;
+
+        res.json({ paymentUrl }); // To'lov sahifasiga yo'naltirish URLini yuborish
+    } catch (error) {
+        console.error('Error creating invoice:', error.response ? error.response.data : error.message);
+        res.status(500).json({ error: 'Invoice creation failed', details: error.message });
+    }
+});
+
+// AdminBro va boshqa marshrutlarni o'rnatish
 const run = async () => {
   try {
     await mongoose.connect('mongodb+srv://saidaliyevjasur450:e2vxdfq0ZpZBINMU@kardiseproject.rbqdzor.mongodb.net', {
@@ -38,7 +85,6 @@ const run = async () => {
     });
 
     console.log('Connected to MongoDB database');
-
   } catch (error) {
     console.error('Error connecting to MongoDB:', error.message);
   }
@@ -47,67 +93,36 @@ const run = async () => {
   const router = buildAdminRouter(admin);
 
   app.use(admin.options.rootPath, router);
-  app.use(express.json());
-  app.use(express.json({ limit: '100mb' }));
-  app.use(express.urlencoded({ limit: '100mb', extended: true }));
 
-  app.use('/uploads', express.static('uploads'));
-
+  // Default routes
   app.get("/", (req, res) => {
     res.send("hello world. I'm JasurBek");
   });
 
-  // companies
+  // CRUD marshrutlar
   app.post("/company", createCompany);
   app.get("/company", getAllCompanies);
-
-  // projects
   app.post("/projects", createProject);
   app.get("/projects", getAllProjects);
-
-  app.post('/products', createProduct);
-
-  // Barcha mahsulotlarni olish
+  app.post("/products", createProduct);
   app.get('/products', getAllProducts);
-
-  // Mahsulotni o'chirish
   app.delete('/products/:id', deleteProduct);
-
-  // Mahsulotni tahrirlash
   app.put('/products/:id', updateProduct);
-
-  // orders
   app.post("/orders", createOrder);
-
-  // Barcha buyurtmalarni olish
   app.get("/orders", getAllOrders);
-  
-  // Ma'lum bir buyurtmani olish
   app.get("/orders/:id", getOrderById);
-  
-  // Buyurtmani yangilash
   app.put("/orders/:id", updateOrder);
-  
-  // Buyurtmani o'chirish
   app.delete("/orders/:id", deleteOrder);
-
-  // clients
   app.post("/clients", createClient);
   app.get("/clients", getAllClients);
-
-  // motto
   app.post("/motto", createMotto);
   app.get("/motto", getAllMotto);
-
-  // projectLogos
   app.post("/projectlogos", createProjectLogo);
   app.get("/projectlogos", getAllProjectLogos);
-
-  // commands
   app.post("/command", createCommand);
   app.get("/command", getAllCommand);
 
-  // Sales chart data (Sales controller orqali)
+  // Sales chart data
   app.get('/sales-data', async (req, res) => {
     try {
       const data = await getSalesData();

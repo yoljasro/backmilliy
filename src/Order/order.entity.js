@@ -38,6 +38,12 @@ const OrdersSchema = new mongoose.Schema({
     enum: ['Принял', 'оплаченный', 'неуспешный', 'неоплаченный'],
     default: 'Принял',
   },
+  paymentType:{
+    type: String,
+    required: true,
+    enum: ['click', 'payme', 'cash'],
+    default: 'cash',
+  },
   orderStatus: {
     type: String,
     enum: ['Принял', 'Подготовка', 'Готовый'],
