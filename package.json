@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "fix": "npm run build",
-    "install-force": "npm install --force"  
+    "install-force": "npm install --force"
   },
   "devDependencies": {
     "@types/express": "^4.17.6",

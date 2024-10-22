@@ -9,7 +9,6 @@ const axios = require('axios');
 const crypto = require('crypto');
 
 // Sales Chart uchun kerakli kutubxonalar
-const { getSalesData } = require('./controllers/sales.controller'); // Sales controller'dan funksiya
 
 const app = express();
 const port = 9000;
@@ -21,12 +20,6 @@ const MERCHANT_USER_ID = '46815'; // Sizning merchant user ID
 const SECRET_KEY = 'isJihg1thilU'; // Sizning secret key
 
 //controllers 
-const { createCompany, getAllCompanies } = require("./controllers/company.controller")
-const { createProject, getAllProjects } = require("./controllers/project.controller")
-const { createClient, getAllClients } = require("./controllers/client.controller")
-const { createMotto, getAllMotto } = require("./controllers/motto.controller")
-const { createProjectLogo, getAllProjectLogos } = require("./controllers/projectLogo.controller")
-const { createCommand, getAllCommand } = require("./controllers/command.controller")
 const { createProduct, getAllProducts, deleteProduct, updateProduct } = require("./controllers/product.controller")
 const { createOrder,
   getAllOrders,
@@ -100,10 +93,7 @@ const run = async () => {
   });
 
   // CRUD marshrutlar
-  app.post("/company", createCompany);
-  app.get("/company", getAllCompanies);
-  app.post("/projects", createProject);
-  app.get("/projects", getAllProjects);
+
   app.post("/products", createProduct);
   app.get('/products', getAllProducts);
   app.delete('/products/:id', deleteProduct);
@@ -113,24 +103,10 @@ const run = async () => {
   app.get("/orders/:id", getOrderById);
   app.put("/orders/:id", updateOrder);
   app.delete("/orders/:id", deleteOrder);
-  app.post("/clients", createClient);
-  app.get("/clients", getAllClients);
-  app.post("/motto", createMotto);
-  app.get("/motto", getAllMotto);
-  app.post("/projectlogos", createProjectLogo);
-  app.get("/projectlogos", getAllProjectLogos);
-  app.post("/command", createCommand);
-  app.get("/command", getAllCommand);
+  
 
   // Sales chart data
-  app.get('/sales-data', async (req, res) => {
-    try {
-      const data = await getSalesData();
-      res.json(data);
-    } catch (err) {
-      res.status(500).json({ error: 'Sales data olishda xatolik' });
-    }
-  });
+  
 
   app.listen(port, () => console.log(
     `Example app listening at http://localhost:${port}`,
