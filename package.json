@@ -4,8 +4,9 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "nodemon server.js",
-    "fix": "npm run build"
+    "start": "node server.js",
+    "fix": "npm run build",
+    "install-force": "npm install --force"  
   },
   "devDependencies": {
     "@types/express": "^4.17.6",
