@@ -15,6 +15,9 @@ const { Server } = require('socket.io');
 const app = express();
 const port = 9000;
 
+app.use(cors());
+
+
 // Create an HTTP server to use with Socket.IO
 const server = http.createServer(app);
 const io = new Server(server);
@@ -29,7 +32,6 @@ const SECRET_KEY = 'isJihg1thilU'; // Sizning secret key
 const { createProduct, getAllProducts, deleteProduct, updateProduct } = require("./controllers/product.controller");
 const { createOrder, getAllOrders, getOrderById, updateOrderStatus, updateOrder, deleteOrder } = require("./controllers/orders.controller");
 
-app.use(cors());
 
 // Middleware
 app.use(express.json()); // JSON formatida ma'lumotlarni qabul qilish
