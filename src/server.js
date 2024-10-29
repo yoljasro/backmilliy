@@ -15,9 +15,6 @@ const { Server } = require('socket.io');
 const app = express();
 const port = 9000;
 
-app.use(cors());
-
-
 // Create an HTTP server to use with Socket.IO
 const server = http.createServer(app);
 const io = new Server(server);
@@ -32,6 +29,7 @@ const SECRET_KEY = 'isJihg1thilU'; // Sizning secret key
 const { createProduct, getAllProducts, deleteProduct, updateProduct } = require("./controllers/product.controller");
 const { createOrder, getAllOrders, getOrderById, updateOrderStatus, updateOrder, deleteOrder } = require("./controllers/orders.controller");
 
+app.use(cors());
 
 // Middleware
 app.use(express.json()); // JSON formatida ma'lumotlarni qabul qilish
@@ -62,7 +60,7 @@ app.post('/create-invoice', async (req, res) => {
         const response = await axios.post('https://api.click.uz/v2/merchant/invoice/create', data, { headers });
         
         // Olingan invoice_id yordamida to'lov sahifasiga yo'naltirish
-        const paymentUrl = `https://my.click.uz/services/pay?service_id=${SERVICE_ID}&merchant_id=${MERCHANT_ID}&amount=${amount}&transaction_param=${merchantTransId}&return_url=https://milliyfront-ju7q.vercel.app/status`;
+        const paymentUrl = `https://my.click.uz/services/pay?service_id=${SERVICE_ID}&merchant_id=${MERCHANT_ID}&amount=${amount}&transaction_param=${merchantTransId}&return_url=http://localhost:${port}/return-url`;
 
         res.json({ paymentUrl }); // To'lov sahifasiga yo'naltirish URLini yuborish
     } catch (error) {
