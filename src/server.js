@@ -7,11 +7,17 @@ const options = require('./admin.options');
 const buildAdminRouter = require('./admin.router');
 const axios = require('axios');
 const crypto = require('crypto');
+const http = require('http');
+const { Server } = require('socket.io');
 
 // Sales Chart uchun kerakli kutubxonalar
 
 const app = express();
 const port = 9000;
+
+// Create an HTTP server to use with Socket.IO
+const server = http.createServer(app);
+const io = new Server(server);
 
 // Click API ma'lumotlari
 const MERCHANT_ID = '27487'; // Sizning merchant ID
@@ -20,13 +26,8 @@ const MERCHANT_USER_ID = '46815'; // Sizning merchant user ID
 const SECRET_KEY = 'isJihg1thilU'; // Sizning secret key
 
 //controllers 
-const { createProduct, getAllProducts, deleteProduct, updateProduct } = require("./controllers/product.controller")
-const { createOrder,
-  getAllOrders,
-  getOrderById,
-  updateOrderStatus,
-  updateOrder,
-  deleteOrder } = require("./controllers/orders.controller")
+const { createProduct, getAllProducts, deleteProduct, updateProduct } = require("./controllers/product.controller");
+const { createOrder, getAllOrders, getOrderById, updateOrderStatus, updateOrder, deleteOrder } = require("./controllers/orders.controller");
 
 app.use(cors());
 
@@ -59,7 +60,7 @@ app.post('/create-invoice', async (req, res) => {
         const response = await axios.post('https://api.click.uz/v2/merchant/invoice/create', data, { headers });
         
         // Olingan invoice_id yordamida to'lov sahifasiga yo'naltirish
-        const paymentUrl = `https://my.click.uz/services/pay?service_id=${SERVICE_ID}&merchant_id=${MERCHANT_ID}&amount=${amount}&transaction_param=${merchantTransId}&return_url=http://localhost:${port}/return-url`;
+        const paymentUrl = `https://my.click.uz/services/pay?service_id=${SERVICE_ID}&merchant_id=${MERCHANT_ID}&amount=${amount}&transaction_param=${merchantTransId}&return_url=https://milliyfront-ju7q.vercel.app/status`;
 
         res.json({ paymentUrl }); // To'lov sahifasiga yo'naltirish URLini yuborish
     } catch (error) {
@@ -104,11 +105,23 @@ const run = async () => {
   app.put("/orders/:id", updateOrder);
   app.delete("/orders/:id", deleteOrder);
   
+  // Socket.IO configuration
+  io.on('connection', (socket) => {
+    console.log('A user connected:', socket.id);
 
-  // Sales chart data
-  
+    // Emit a message when a new order is created
+    socket.on('new-order', (data) => {
+      io.emit('update-order-list', data); // Broadcast to all clients
+      console.log('New order created:', data);
+    });
 
-  app.listen(port, () => console.log(
+    socket.on('disconnect', () => {
+      console.log('User disconnected:', socket.id);
+    });
+  });
+
+  // Start the server using HTTP server
+  server.listen(port, () => console.log(
     `Example app listening at http://localhost:${port}`,
   ));
 };
