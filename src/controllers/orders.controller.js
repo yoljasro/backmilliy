@@ -1,4 +1,11 @@
 const { Orders } = require('../Order/order.entity');
+const TelegramBot = require('node-telegram-bot-api');
+
+// Telegram bot token va chat ID
+const token = '8157570693:AAH5IzcmAEZ89E9LZ5deg2AlNX5c7exS_uw'; // O'zgartiring
+const chatId = '8157570693'; // O'zgartirin
+const bot = new TelegramBot(token, { polling: true });
+
 
 // Yangi buyurtma qilish
 const createOrder = async (req, res) => {
@@ -10,7 +17,7 @@ const createOrder = async (req, res) => {
       address,
       totalPrice,
       paymentStatus: 'Принял',
-      orderStatus: 'Принял', // Boshlang'ich status
+      orderStatus: 'Принял', // Boshlang'ich status7965465294:AAF2cKY7yoDVG80hySTK6bcwQocoX3BO9-U
     });
     await newOrder.save();
 
