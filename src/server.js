@@ -17,7 +17,14 @@ const port = 9000;
 
 // Create an HTTP server to use with Socket.IO
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+    cors: {
+        origin: 'https://milliyfront-last.vercel.app', // Frontend manzilingiz
+        methods: ['GET', 'POST'],
+        allowedHeaders: ['Content-Type'],
+        credentials: true // Agar kerak bo'lsa
+    }
+});
 
 // Click API ma'lumotlari
 const MERCHANT_ID = '27487'; // Sizning merchant ID
@@ -94,7 +101,6 @@ const run = async () => {
   });
 
   // CRUD marshrutlar
-
   app.post("/products", createProduct);
   app.get('/products', getAllProducts);
   app.delete('/products/:id', deleteProduct);
@@ -127,4 +133,3 @@ const run = async () => {
 };
 
 module.exports = run;
-  
