@@ -20,7 +20,7 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: [
-      'https://milliyfront-last.vercel.app',  // Production frontend
+      'https://milliyfront-ju7q.vercel.app',  // Production frontend
       'http://localhost:3000'                 // Development frontend
     ],
     methods: ['GET', 'POST'],
@@ -31,7 +31,7 @@ const io = new Server(server, {
 
 // Configure CORS for Express
 const allowedOrigins = [
-  'https://milliyfront-last.vercel.app',
+  'https://milliyfront-ju7q.vercel.app',
   'http://localhost:3000'
 ];
 
