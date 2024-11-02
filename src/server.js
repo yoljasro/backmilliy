@@ -18,36 +18,13 @@ const port = 9000;
 // Create an HTTP server to use with Socket.IO
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: {
-    origin: [
-      'https://milliyfront-ju7q.vercel.app',  // Production frontend
-      'http://localhost:3000'                 // Development frontend
-    ],
-    methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type'],
-    credentials: true
-  }
-});
-
-// Configure CORS for Express
-const allowedOrigins = [
-  'https://milliyfront-ju7q.vercel.app',
-  'http://localhost:3000'
-];
-
-app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (e.g., server-to-server requests)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
+    cors: {
+        origin: 'https://milliyfront-last.vercel.app', // Frontend manzilingiz
+        methods: ['GET', 'POST'],
+        allowedHeaders: ['Content-Type'],
+        credentials: true // Agar kerak bo'lsa
     }
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true
-}));
+});
 
 // Click API ma'lumotlari
 const MERCHANT_ID = '27487'; // Sizning merchant ID
@@ -58,6 +35,7 @@ const SECRET_KEY = 'isJihg1thilU'; // Sizning secret key
 //controllers 
 const { createProduct, getAllProducts, deleteProduct, updateProduct } = require("./controllers/product.controller");
 const { createOrder, getAllOrders, getOrderById, updateOrderStatus, updateOrder, deleteOrder } = require("./controllers/orders.controller");
+const {createBanner , getAllBanners} = require("./controllers/banner.controller")
 
 app.use(cors());
 
@@ -133,11 +111,14 @@ const run = async () => {
   app.get("/orders/:id", getOrderById);
   app.put("/orders/:id", updateOrder);
   app.delete("/orders/:id", deleteOrder);
+  app.post("/banners" , createBanner)
+  app.get("/banners" , getAllBanners)
   
   // Socket.IO configuration
   io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
 
+    // Emit a message when a new order is created
     socket.on('new-order', (data) => {
       io.emit('update-order-list', data); // Broadcast to all clients
       console.log('New order created:', data);
