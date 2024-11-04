@@ -9,7 +9,7 @@ const createOrder = async (req, res) => {
       deliveryType,
       address,
       totalPrice,
-      paymentStatus: 'Наличные',
+      paymentStatus: 'Принял',
       orderStatus: 'Принял', // Boshlang'ich status
     });
     await newOrder.save();
@@ -19,9 +19,11 @@ const createOrder = async (req, res) => {
     
     res.status(201).json({ order: newOrder, paymentUrl });
   } catch (error) {
+    console.error("Order creation error:", error); // Xatolikni logga yozish
     res.status(500).json({ message: error.message });
   }
 };
+
 
 // Barcha buyurtmalarni olish
 const getAllOrders = async (req, res) => {  
