@@ -9,7 +9,6 @@ const axios = require('axios');
 const crypto = require('crypto');
 const http = require('http');
 const { Server } = require('socket.io');
-
 // Sales Chart uchun kerakli kutubxonalar
 
 const app = express();
