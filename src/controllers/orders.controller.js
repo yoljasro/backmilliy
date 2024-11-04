@@ -1,4 +1,8 @@
 const { Orders } = require('../Order/order.entity');
+const TelegramBot = require('node-telegram-bot-api');
+const telegramToken = '8157570693:AAGgUIBA55U91Pi4sIuHN94gTlv2TV5nEUg'; // Telegram bot tokenini o'zgartiring
+const chatId = '8157570693'; 
+const bot = new TelegramBot(telegramToken, { polling: true });
 
 // Yangi buyurtma qilish
 const createOrder = async (req, res) => {
@@ -13,6 +17,19 @@ const createOrder = async (req, res) => {
       orderStatus: 'Принял', // Boshlang'ich status
     });
     await newOrder.save();
+
+    // Telegramga xabar yuborish
+    const message = `
+      Yangi buyurtma yaratildi:
+      Buyurtma ID: ${newOrder._id}
+      Mahsulotlar: ${newOrder.products.map(product => `${product.productName} (x${product.quantity})`).join(', ')}
+      Yetkazib berish turi: ${newOrder.deliveryType}
+      Manzil: ${newOrder.address}
+      Jami narx: ${newOrder.totalPrice} so'm
+      To'lov holati: ${newOrder.paymentStatus}
+      Buyurtma holati: ${newOrder.orderStatus}
+    `;
+    bot.sendMessage(chatId, message);
 
     // Click test to'lov integratsiyasi
     const paymentUrl = `https://my.click.uz/payment/${newOrder.id}`;

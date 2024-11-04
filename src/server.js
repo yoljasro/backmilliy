@@ -10,6 +10,7 @@ const crypto = require('crypto');
 const http = require('http');
 const { Server } = require('socket.io');
 
+
 // Sales Chart uchun kerakli kutubxonalar
 
 const app = express();
@@ -44,6 +45,9 @@ app.use(express.json()); // JSON formatida ma'lumotlarni qabul qilish
 app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ limit: '100mb', extended: true }));
 app.use('/uploads', express.static('uploads'));
+
+
+
 
 // Click - Invoice yaratish
 app.post('/create-invoice', async (req, res) => {
