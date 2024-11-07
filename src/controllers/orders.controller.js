@@ -1,114 +1,106 @@
 const { Orders } = require('../Order/order.entity');
 const TelegramBot = require('node-telegram-bot-api');
 
-const telegramToken = '8157570693:AAGgUIBA55U91Pi4sIuHN94gTlv2TV5nEUg'; // Telegram bot tokenini o'zgartiring
-const chatId = '8157570693'; // To'g'ri chat ID'ni kiriting
-const bot = new TelegramBot(telegramToken, { polling: true });
+const telegramToken = '8157570693:AAGgUIBA55U91Pi4sIuHN94gTlv2TV5nEUg'; // Измените токен Telegram бота
+const chatIds = ['1847596793', '5036056844', '7405917966', '7535664010', '984663162']; // Введите правильные chat ID
+const bot = new TelegramBot(telegramToken, { polling: false });
 
-// Yangi buyurtma qilish
+// Создание нового заказа
 const createOrder = async (req, res) => {
   try {
     const { products, deliveryType, address, totalPrice } = req.body;
-
-    console.log("Yangi buyurtma yaratilmoqda..."); // Buyurtma yaratilayotganini tekshirish
 
     const newOrder = new Orders({
       products,
       deliveryType,
       address,
       totalPrice,
-      paymentStatus: 'Принял',
-      orderStatus: 'Принял', // Boshlang'ich status
+      paymentStatus: 'Принял',    
+      orderStatus: 'Принял',
     });
     await newOrder.save();
-    console.log("Buyurtma ma'lumotlar bazasida saqlandi:", newOrder); // Saqlangan buyurtma
 
-    // Telegramga xabar yuborish
+    // Отправка сообщения в Telegram
     const message = `
-      Yangi buyurtma yaratildi:
-      Buyurtma ID: ${newOrder._id}
-      Mahsulotlar: ${newOrder.products.map(product => `${product.productName} (x${product.quantity})`).join(', ')}
-      Yetkazib berish turi: ${newOrder.deliveryType}
-      Manzil: ${newOrder.address}
-      Jami narx: ${newOrder.totalPrice} so'm
-      To'lov holati: ${newOrder.paymentStatus}
-      Buyurtma holati: ${newOrder.orderStatus}
+      Новый заказ создан:
+      ID заказа: ${newOrder._id}
+      Продукты: ${newOrder.products.map(product => `${product.productName} (x${product.quantity})`).join(', ')}
+      Тип доставки: ${newOrder.deliveryType}
+      Адрес: ${newOrder.address}
+      Общая сумма: ${newOrder.totalPrice} сум
+      Статус оплаты: ${newOrder.paymentStatus}
+      Статус заказа: ${newOrder.orderStatus}
     `;
     
-    console.log("Telegramga xabar yuborilmoqda..."); // Xabar yuborish jarayoni
-    try {
-      await bot.sendMessage(chatId, message);
-      console.log("Xabar Telegram botga muvaffaqiyatli yuborildi!");
-    } catch (error) {
-      console.error("Telegram botga xabar yuborishda xatolik:", error);
+    for (const chatId of chatIds) {
+      try {
+        await bot.sendMessage(chatId, message);
+      } catch (error) {
+        console.error(`Ошибка при отправке сообщения для chat ID ${chatId}:`, error);
+      }
     }
 
-    // Click test to'lov integratsiyasi
+    // Создание URL страницы оплаты через Click
     const paymentUrl = `https://my.click.uz/payment/${newOrder.id}`;
     res.status(201).json({ order: newOrder, paymentUrl });
 
   } catch (error) {
-    console.error("Buyurtma yaratishda xato:", error); // Xatolikni logga yozish
     res.status(500).json({ message: error.message });
   }
 };
 
-// Barcha buyurtmalarni olish
+// Получение всех заказов
 const getAllOrders = async (req, res) => {  
   try {
     const orders = await Orders.find();
     res.status(200).json(orders);
   } catch (error) {
-    console.error('Error fetching orders:', error);
     res.status(500).json({ message: error.message });
   }
 };
 
-// Ma'lum bir buyurtmani olish
+// Получение определенного заказа
 const getOrderById = async (req, res) => {
   try {
     const order = await Orders.findById(req.params.id);
-    if (!order) return res.status(404).json({ message: 'Order not found' });
+    if (!order) return res.status(404).json({ message: 'Заказ не найден' });
     res.status(200).json(order);
   } catch (error) {
-    console.error('Error fetching order by ID:', error);
     res.status(500).json({ message: error.message });
   }
 };
 
-// Buyurtmani yangilash (to'lov holatini yangilash)
+// Обновление заказа (обновление статуса оплаты)
 const updateOrderStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
 
     const updatedOrder = await Orders.findByIdAndUpdate(id, { paymentStatus: status }, { new: true });
-    if (!updatedOrder) return res.status(404).json({ message: 'Order not found' });
+    if (!updatedOrder) return res.status(404).json({ message: 'Заказ не найден' });
 
     res.status(200).json(updatedOrder);
   } catch (error) {
-    console.error('Error updating payment status:', error);
     res.status(500).json({ message: error.message });
   }
 };
 
-// Buyurtma holatini yangilash (orderStatus)
+// Обновление статуса заказа (orderStatus)
 const updateOrderStatusByAdmin = async (req, res) => {
   try {
     const { id } = req.params;
     const { orderStatus } = req.body;
 
     const updatedOrder = await Orders.findByIdAndUpdate(id, { orderStatus }, { new: true });
-    if (!updatedOrder) return res.status(404).json({ message: 'Order not found' });
+    if (!updatedOrder) return res.status(404).json({ message: 'Заказ не найден' });
 
     res.status(200).json(updatedOrder);
   } catch (error) {
-    console.error('Error updating order status by admin:', error);
     res.status(500).json({ message: error.message });
   }
 };
 
-// Buyurtmani umumiy yangilash
+// Полное обновление заказа
 const updateOrder = async (req, res) => {
   try {
     const { id } = req.params;
@@ -123,25 +115,23 @@ const updateOrder = async (req, res) => {
       orderStatus,
     }, { new: true }).populate('products.productId');
     
-    if (!updatedOrder) return res.status(404).json({ message: 'Order not found' });
+    if (!updatedOrder) return res.status(404).json({ message: 'Заказ не найден' });
 
     res.status(200).json(updatedOrder);
   } catch (error) {
-    console.error('Error updating order:', error);
     res.status(500).json({ message: error.message });
   }
 };
 
-// Buyurtmani o'chirish
+// Удаление заказа
 const deleteOrder = async (req, res) => {
   try {
     const { id } = req.params;
     const deletedOrder = await Orders.findByIdAndDelete(id);
-    if (!deletedOrder) return res.status(404).json({ message: 'Order not found' });
+    if (!deletedOrder) return res.status(404).json({ message: 'Заказ не найден' });
 
-    res.status(200).json({ message: 'Order deleted successfully' });
+    res.status(200).json({ message: 'Заказ успешно удален' });
   } catch (error) {
-    console.error('Error deleting order:', error);
     res.status(500).json({ message: error.message });
   }
 };

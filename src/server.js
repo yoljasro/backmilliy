@@ -20,7 +20,7 @@ const port = 9000;
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: 'https://milliyfront-last.vercel.app', // Frontend manzilingiz
+        origin: '*', // Frontend manzilingiz
         methods: ['GET', 'POST'],
         allowedHeaders: ['Content-Type'],
         credentials: true // Agar kerak bo'lsa
