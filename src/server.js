@@ -7,7 +7,9 @@ const options = require('./admin.options');
 const buildAdminRouter = require('./admin.router');
 const axios = require('axios');
 const crypto = require('crypto');
+const path = require("path")
 const http = require('http');
+
 const { Server } = require('socket.io');
 
 
@@ -19,24 +21,44 @@ const port = 9000;
 // Create an HTTP server to use with Socket.IO
 const server = http.createServer(app);
 const io = new Server(server, {
-    cors: {
-        origin: '*', // Frontend manzilingiz
-        methods: ['GET', 'POST'],
-        allowedHeaders: ['Content-Type'],
-        credentials: true // Agar kerak bo'lsa
-    }
+  cors: {
+    origin: '*', // Frontend manzilingiz
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type'],
+    credentials: true // Agar kerak bo'lsa
+  }
 });
 
 // Click API ma'lumotlari
 const MERCHANT_ID = '27487'; // Sizning merchant ID
 const SERVICE_ID = '37711'; // Sizning service ID
 const MERCHANT_USER_ID = '46815'; // Sizning merchant user ID
-const SECRET_KEY = 'isJihg1thilU'; // Sizning secret key
+const SECRET_KEY = 'isJihg1thilU'; // Sizning secret key\
+
+
+// const upload = multer({
+//   dest: 'uploads/', 
+//   limits: { fileSize: 5 * 1024 * 1024 }, 
+//   fileFilter: (req, file, cb) => {
+//     const fileTypes = /jpeg|jpg|png/;
+//     const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
+//     const mimetype = fileTypes.test(file.mimetype);
+//     if (mimetype && extname) {
+//       return cb(null, true);
+//     }
+//     cb(new Error('Only images are allowed!'));
+//   },
+// });
+
+// app.post("/profiles", upload.fields([{ name: 'avatar', maxCount: 1 }]), createProfile);?
+
 
 //controllers 
 const { createProduct, getAllProducts, deleteProduct, updateProduct } = require("./controllers/product.controller");
 const { createOrder, getAllOrders, getOrderById, updateOrderStatus, updateOrder, deleteOrder } = require("./controllers/orders.controller");
-const {createBanner , getAllBanners} = require("./controllers/banner.controller")
+const { createBanner, getAllBanners } = require("./controllers/banner.controller");
+const { createProfile, getAllProfiles, deleteProfile, updateProfile } = require("./controllers/profile.controller.js");
+const e = require('express');
 
 app.use(cors());
 
@@ -51,34 +73,34 @@ app.use('/uploads', express.static('uploads'));
 
 // Click - Invoice yaratish
 app.post('/create-invoice', async (req, res) => {
-    const { amount, phoneNumber, merchantTransId } = req.body; // Telefon raqamini qabul qilish
-    const timestamp = Math.floor(Date.now() / 1000); // UNIX vaqt
-    const digest = crypto.createHash('sha1').update(timestamp + SECRET_KEY).digest('hex'); // sha1 hash
+  const { amount, phoneNumber, merchantTransId } = req.body; // Telefon raqamini qabul qilish
+  const timestamp = Math.floor(Date.now() / 1000); // UNIX vaqt
+  const digest = crypto.createHash('sha1').update(timestamp + SECRET_KEY).digest('hex'); // sha1 hash
 
-    const headers = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Auth': `${MERCHANT_USER_ID}:${digest}:${timestamp}`
-    };
+  const headers = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+    'Auth': `${MERCHANT_USER_ID}:${digest}:${timestamp}`
+  };
 
-    const data = {
-        service_id: SERVICE_ID,
-        amount: amount,
-        phone_number: phoneNumber, // Telefon raqamini yuborish
-        merchant_trans_id: merchantTransId
-    };
+  const data = {
+    service_id: SERVICE_ID,
+    amount: amount,
+    phone_number: phoneNumber, // Telefon raqamini yuborish
+    merchant_trans_id: merchantTransId
+  };
 
-    try {
-        const response = await axios.post('https://api.click.uz/v2/merchant/invoice/create', data, { headers });
-        
-        // Olingan invoice_id yordamida to'lov sahifasiga yo'naltirish
-        const paymentUrl = `https://my.click.uz/services/pay?service_id=${SERVICE_ID}&merchant_id=${MERCHANT_ID}&amount=${amount}&transaction_param=${merchantTransId}&return_url=http://localhost:${port}/return-url`;
+  try {
+    const response = await axios.post('https://api.click.uz/v2/merchant/invoice/create', data, { headers });
 
-        res.json({ paymentUrl }); // To'lov sahifasiga yo'naltirish URLini yuborish
-    } catch (error) {
-        console.error('Error creating invoice:', error.response ? error.response.data : error.message);
-        res.status(500).json({ error: 'Invoice creation failed', details: error.message });
-    }
+    // Olingan invoice_id yordamida to'lov sahifasiga yo'naltirish
+    const paymentUrl = `https://my.click.uz/services/pay?service_id=${SERVICE_ID}&merchant_id=${MERCHANT_ID}&amount=${amount}&transaction_param=${merchantTransId}&return_url=http://localhost:${port}/return-url`;
+
+    res.json({ paymentUrl }); // To'lov sahifasiga yo'naltirish URLini yuborish
+  } catch (error) {
+    console.error('Error creating invoice:', error.response ? error.response.data : error.message);
+    res.status(500).json({ error: 'Invoice creation failed', details: error.message });
+  }
 });
 
 // AdminBro va boshqa marshrutlarni o'rnatish
@@ -115,14 +137,19 @@ const run = async () => {
   app.get("/orders/:id", getOrderById);
   app.put("/orders/:id", updateOrder);
   app.delete("/orders/:id", deleteOrder);
-  app.post("/banners" , createBanner)
-  app.get("/banners" , getAllBanners)
-  
+  app.post("/banners", createBanner)
+  app.get("/banners", getAllBanners)
+  //profile
+  app.post('/profiles', createProfile);
+  app.put('/profiles/:id', updateProfile);
+  app.get('/profiles', getAllProfiles);
+  app.delete('/profiles/:id', deleteProfile);
+  // app.put('/profiles/:id',  updateProfile);
   // Socket.IO configuration
-  io.on('connection', (socket) => {
+  io.on('connection', (socket) => {z``
     console.log('A user connected:', socket.id);
 
-    // Emit a message when a new order is created
+    // Emit a message when a new order is created    
     socket.on('new-order', (data) => {
       io.emit('update-order-list', data); // Broadcast to all clients
       console.log('New order created:', data);
